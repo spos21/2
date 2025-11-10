@@ -1,0 +1,78 @@
+Problem Statement : Create a collection named rating that contain 5 documents of the following 
+prototype and solve the following Queries. 
+{ 
+Movie_id: 123, 
+User_id: 12, 
+Title: Toy Story(1995), 
+Status: ‘A’ 
+} 
+a. Creating an index on movie_id and sorts the keys in the index in ascending order. Verify query plan. 
+b. Show various indexes created on movie collection. 
+c. Sort movie_id in descending order 
+d. Limit the number of items in the result of above query. 
+e. Get ratings for the movie “ICE AGE(2005)” using the descending ordered index on movie_id and explain. 
+f. Rebuild all indexes for the ratings collection 
+g. Drop index on rating collection. 
+h. Create an index on movie_id and ratings fields together with movie_id (ascending order sorted) and rating 
+(descending order sorted) 
+i. A compound index for movie_id, rating, and user_id. 
+
+
+
+db.rating.insertMany([ 
+{ movie_id: 101, user_id: 1, title: "Toy Story(1995)", status: "A", rating: 4 }, 
+{ movie_id: 102, user_id: 2, title: "ICE AGE(2005)", status: "A", rating: 5 }, 
+{ movie_id: 103, user_id: 3, title: "Avatar(2009)", status: "A", rating: 4 }, 
+{ movie_id: 104, user_id: 4, title: "Shrek(2001)", status: "A", rating: 3 }, 
+{ movie_id: 105, user_id: 5, title: "Finding Nemo(2003)", status: "A", rating: 5 } 
+]) 
+
+
+
+a.
+
+db.rating.createIndex({ movie_id: 1 })
+
+db.rating.find().sort({ movie_id: 1 }).explain("executionStats")
+
+
+b.
+
+db.rating.getIndexes()
+
+
+c.
+
+db.rating.find().sort({ movie_id: -1 })
+
+
+d.
+
+db.rating.find().sort({ movie_id: -1 }).limit(3)
+
+
+e.
+
+db.rating.find({ title: “ICE AGE(2005)” }).sort({ movie_id: -1 }).explain(“executionStats”) 
+
+
+f.
+
+db.rating.reIndex()
+
+
+g.
+
+db.rating.dropIndex({ movie_id: 1 }) 
+
+
+h.
+
+db.rating.createIndex({ movie_id: 1, rating: -1 }) 
+
+
+i.
+
+db.rating.createIndex({ movie_id: 1, rating: -1, user_id: 1 })
+
+
