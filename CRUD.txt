@@ -1,0 +1,173 @@
+1. Create a collection named Book. Add 5 documents in the 
+collection with keys (book_isbn, title, publisher_name, 
+author(Name, Address, Phone No[landline, mobile]), 
+publisher_city, price, copies) 
+2. Give details of Books whose Publisher lives in “Pune”. 
+3. Delete name Book from Book whose name start with “D” 
+4. Change the city of publisher “Pearson” to “Pune”. 
+5. Find the details of publisher named “Pearson”. 
+6. Count the number of documents in the collection. 
+7. Arrange the documents in descending order of book_isbn. 
+8. Select Book Names whose title is ”DBMS”. 
+9. Update Book Copies as “10” whose Book Publisher is “Tata 
+MacGraw Hill”. 
+10.Display name of publishers as per no of books published 
+by them in ascending order. 
+11.Get publisher names who published at least one book 
+written by author name like ‘K%’. 
+12.Delete the book from Book table written by Author 
+‘Korth’.
+
+
+1.
+db.createCollection("Book") 
+
+db.Book.insertOne({
+  book_isbn: "ISBN001",
+  title: "Database Systems",
+  publisher_name: "Pearson",
+  author: {
+    name: "Abraham Silberschatz",
+    address: "New York",
+    phone: {
+      landline: "123456789",
+      mobile: "9876543210"
+    }
+  },
+  publisher_city: "Mumbai",
+  price: 500,
+  copies: 5
+})
+
+db.Book.find().pretty();
+
+
+db.Book.insertMany([
+  {
+    book_isbn: "ISBN001",
+    title: "Database Systems",
+    publisher_name: "Pearson",
+    author: {
+      Name: "Silberschatz",
+      Address: "New York",
+      Phone: { landline: "1111111111", mobile: "9999999999" }
+    },
+    publisher_city: "Mumbai",
+    price: 500,
+    copies: 5
+  },
+  {
+    book_isbn: "ISBN002",
+    title: "DBMS",
+    publisher_name: "Tata MacGraw Hill",
+    author: {
+      Name: "Korth",
+      Address: "Delhi",
+      Phone: { landline: "2222222222", mobile: "8888888888" }
+    },
+    publisher_city: "Pune",
+    price: 600,
+    copies: 7
+  },
+  {
+    book_isbn: "ISBN003",
+    title: "Operating Systems",
+    publisher_name: "Pearson",
+    author: {
+      Name: "Galvin",
+      Address: "California",
+      Phone: { landline: "3333333333", mobile: "7777777777" }
+    },
+    publisher_city: "Bangalore",
+    price: 450,
+    copies: 6
+  },
+  {
+    book_isbn: "ISBN004",
+    title: "Data Structures",
+    publisher_name: "Oxford",
+    author: {
+      Name: "Mark Allen",
+      Address: "London",
+      Phone: { landline: "4444444444", mobile: "6666666666" }
+    },
+    publisher_city: "Pune",
+    price: 550,
+    copies: 8
+  },
+  {
+    book_isbn: "ISBN005",
+    title: "Computer Networks",
+    publisher_name: "McGraw Hill",
+    author: {
+      Name: "Tanenbaum",
+      Address: "Amsterdam",
+      Phone: { landline: "5555555555", mobile: "5555555555" }
+    },
+    publisher_city: "Chennai",
+    price: 700,
+    copies: 9
+  }
+])
+
+db.Book.find().pretty();
+
+
+2.
+db.Book.find({ publisher_city: "Pune" }).pretty();
+
+3.
+db.Book.deleteMany({ title: { $regex: "^D" } })
+
+db.Book.find().pretty();
+
+4.
+db.Book.updateMany(
+  { publisher_name: "Pearson" },
+  { $set: { publisher_city: "Pune" } }
+)
+
+db.Book.find({ publisher_city: "Pune"})
+
+5.
+db.Book.find({ publisher_name: "Pearson" })
+
+6.
+db.Book.countDocuments()
+
+7.
+db.Book.find().sort({ book_isbn: -1 })
+
+8.
+db.Book.find(
+  { title: "DBMS" }
+)
+
+9.
+db.Book.updateMany(
+  { publisher_name: "Tata MacGraw Hill" },
+  { $set: { copies: 10 } }
+)
+
+db.Book.find().pretty();
+
+10.
+db.Book.aggregate([
+  { $group: { _id: "$publisher_name", books: { $sum: 1 } } },
+  { $sort: { books: 1 } }
+])
+
+db.Book.find(
+  { "author.Name": { $regex: "^K" } },
+  { publisher_name: 1, _id: 0 }
+)
+
+11.
+db.Book.find(
+  { "author.Name": { $regex: "^T" } },
+  { publisher_name: 1, _id: 0 }
+)
+
+12.
+db.Book.deleteOne({ "author.Name": "Korth" })
+
