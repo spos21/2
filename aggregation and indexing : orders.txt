@@ -1,0 +1,284 @@
+Problem statement: Create a collection named "ORDERS" that contain 
+documents of the following prototype and solve the following queries: 
+{ cust_id: "abc123", 
+ord_date: new Date("Oct 04, 2012"), 
+status: 'A', 
+price: 50, 
+items: [ { sku: "xxx", qty: 25, price: 1 }, 
+{ sku "yyy", qty: 25, price: 1}]} 
+ 
+ 
+a) Find total order value per customer 
+b) Find total quantity of each item ordered 
+c) Get total sales for orders with status=”A” 
+d) Count all records from orders 
+e) Sum the price field from orders 
+f) For each unique_id,sum the price field 
+g) For each unique cust_id,sum the price field ,results sorted by sum 
+h) For each unique cust_id,ord_date grouping ,sum the price field 
+i) For cust_id with multiple records , returns the cust_id & the 
+corresponding recordcount 
+j) For each unique cust_id,ord_date grouping , sum the price field & return 
+only where the sum is greater than 55 
+k) For each unique cust_id with status A ,sum the price field
+
+
+
+db.createCollection("ORDERS")
+
+db.ORDERS.insertMany([
+  {
+    cust_id: "abc123",
+    ord_date: new Date("Oct 04, 2012"),
+    status: "A",
+    price: 50,
+    items: [
+      { sku: "xxx", qty: 25, price: 1 },
+      { sku: "yyy", qty: 25, price: 1 }
+    ]
+  },
+  {
+    cust_id: "Imn456",
+    ord_date: new Date("Jan 10, 2014"),
+    status: "A",
+    price: 150,
+    items: [
+      { sku: "xxx", qty: 30, price: 2 },
+      { sku: "ccc", qty: 15, price: 4 }
+    ]
+  },
+  {
+    cust_id: "xyz789",
+    ord_date: new Date("Nov 15, 2013"),
+    status: "B",
+    price: 200,
+    items: [
+      { sku: "aaa", qty: 10, price: 5 },
+      { sku: "bbb", qty: 20, price: 3 }
+    ]
+  }
+]);
+
+db.ORDERS.find().pretty()
+
+
+a.
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: "$cust_id",
+      totalSpent: { $sum: "$price" },
+      totalOrders: { $sum: 1 }
+    }
+  }
+]);
+
+
+
+b.
+
+db.ORDERS.aggregate([
+  {
+    $unwind: "$items"
+  },
+  {
+    $group: {
+      _id: "$items.sku",
+      totalQty: { $sum: "$items.qty" }
+    }
+  }
+]);
+
+
+c.
+
+db.ORDERS.aggregate([
+  {
+    $match: { status: "A" }
+  },
+  {
+    $group: {
+      _id: null,
+      totalSales: { $sum: "$price" }
+    }
+  }
+]);
+
+
+d.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: null,
+      count: { $sum: 1 }
+    }
+  }
+]);
+
+
+e.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: null,
+      price: { $sum: "$price" }
+    }
+  }
+]);
+
+
+f.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: "$cust_id",
+      total_price: { $sum: "$price" }
+    }
+  }
+]);
+
+
+g.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: "$cust_id",
+      total_price: { $sum: "$price" }
+    }
+  },
+  {
+    $sort: { total_price: 1 }
+  }
+]);
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: "$cust_id",
+      total_price: { $sum: "$price" }
+    }
+  },
+  {
+    $sort: { total_price: -1 }
+  }
+]);
+
+
+h.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: {
+        cust_id: "$cust_id",
+        ord_date: "$ord_date"
+      },
+      total_price: { $sum: "$price" }
+    }
+  },
+  {
+    $sort: { total_price: -1 }
+  }
+]);
+
+
+i.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: "$cust_id",
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $match: {
+      count: { $gt: 1 }
+    }
+  }
+]);
+
+
+j.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: {
+        cust_id: "$cust_id",
+        ord_date: "$ord_date"
+      },
+      total_price: { $sum: "$price" }
+    }
+  },
+  {
+    $match: {
+      total_price: { $gt: 50 }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      cust_id: "$_id.cust_id",
+      ord_date: "$_id.ord_date",
+      total_price: 1
+    }
+  }
+]);
+
+
+h.
+
+db.ORDERS.aggregate([
+  {
+    $match: {
+      status: "A"
+    }
+  },
+  {
+    $group: {
+      _id: "$cust_id",
+      total_price: { $sum: "$price" }
+    }
+  }
+]);
+
+
+i.
+
+db.ORDERS.aggregate([
+  {
+    $group: {
+      _id: {
+        year: { $year: "$ord_date" },
+        month: { $month: "$ord_date" }
+      },
+      monthlySales: { $sum: "$price" }
+    }
+  },
+  {
+    $sort: {
+      "_id.year": 1,
+      "_id.month": 1
+    }
+  }
+]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
