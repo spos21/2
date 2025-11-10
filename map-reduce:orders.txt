@@ -1,0 +1,117 @@
+A={ 
+cust_id: "abc123",  
+ord_date: new Date("Oct 04, 2012"),  
+status: 'A', price: 25, gender :’F’, rating: 1  
+}  
+a. Write a Map Reduce operation to Return the Total Price Per Customer Id  
+b. Count the number of female (F) and male (M) respondents in the orders collection  
+c. Count the number of each type of rating (1, 2, 3, 4 or 5) for each orders
+
+
+
+db.createCollection("orders")
+
+db.orders.insertMany([
+  {
+    cust_id: "abc123",
+    ord_date: new Date("Oct 04, 2012"),
+    status: "A",
+    price: 25,
+    gender: "F",
+    rating: 1
+  },
+  {
+    cust_id: "abc123",
+    ord_date: new Date("Dec 15, 2012"),
+    status: "A",
+    price: 75,
+    gender: "F",
+    rating: 5
+  },
+  {
+    cust_id: "xyz789",
+    ord_date: new Date("Nov 10, 2012"),
+    status: "A",
+    price: 50,
+    gender: "M",
+    rating: 3
+  },
+  {
+    cust_id: "lmn456",
+    ord_date: new Date("Jan 20, 2013"),
+    status: "A",
+    price: 30,
+    gender: "M",
+    rating: 2
+  },
+  {
+    cust_id: "lmn456",
+    ord_date: new Date("Feb 20, 2013"),
+    status: "A",
+    price: 20,
+    gender: "M",
+    rating: 1
+  }
+]);
+
+
+var mapPricePerCustomer = function () { 
+    emit(this.cust_id, this.price); 
+};
+
+
+var reducePriceSum = function (cust_id, prices) {
+    return Array.sum(prices);
+};
+
+
+db.orders.mapReduce( 
+   mapPricePerCustomer, 
+   reducePriceSum, 
+   { 
+     out: "total_price_per_customer" 
+   } 
+);
+
+
+db.total_price_per_customer.find().pretty(); 
+
+
+var mapGenderCount = function () { 
+   emit(this.gender, 1); 
+};
+
+
+var reduceGenderCount = function (key, values) { 
+    return Array.sum(values); 
+};
+
+
+db.orders.mapReduce( 
+   mapGenderCount, 
+   reduceGenderCount, 
+   { out: "gender_counts" } 
+); 
+
+
+db.gender_counts.find().pretty();
+
+
+var mapRatingCount = function () { 
+   emit(this.rating, 1); 
+};
+
+
+var reduceRatingCount = function (key, values) { 
+   return Array.sum(values); 
+};
+
+
+db.orders.mapReduce( 
+   mapRatingCount, 
+   reduceRatingCount, 
+   { out: "rating_counts" } 
+);
+
+
+db.rating_counts.find().pretty();
